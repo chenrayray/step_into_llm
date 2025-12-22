@@ -6,11 +6,12 @@
 | 依赖软件              | 版本     |
 |:------------------|:-------|
 | CANN              | 8.2RC1 |
+| NNAL              |8.2.RC1 |
 | Python            | 3.10   |
 | MindSpore         | 2.7.1  |
 | MindSpeed-Core-MS | r0.4.0 |
 
-[dockerfile_unified](./dockerfiles/dockfile_unified)中打入了**CANN**与**Python**, 开发者可基于此镜像或任何包含指定**CANN**和**Python**版本的环境中完成实验。
+[dockerfile_unified](./dockerfiles/dockfile_unified)中打入了**CANN**与**Python**, 开发者可基于此镜像或任何包含指定**CANN**和**Python**版本的环境中完成实验。其中NNAL安装请参考[NNAL安装](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/softwareinst/instg/instg_0008.html?Mode=PmIns&InstallType=local&OS=openEuler&Software=cannToolKit#ZH-CN_TOPIC_0000002396687965__Software-cannToolKit-cannNNAE)。
 其他依赖安装参考以下步骤。
 
 ## MindSpore安装
@@ -93,10 +94,32 @@ python examples/qwen2vl/llava_instruct_2_mllm_demo_format.py
 
 ## 4. 微调
 
+- 修改examples/mindspore/qwen2.5vl/finetune_qwen2_5_vl_7b_lora.sh脚本，参考如下：
+```bash
+TP=1
+PP=4
+CP=1
+```
+- 修改examples/mindspore/qwen2.5vl/model_7b.json文件，其中pipeline配置要和权重转换中的pipeline配置一致，参考如下：
+```bash
+"vision_encoder": {
+  ...
+  "pipeline_num_layers": [32,0,0,0],
+  ...
+  }
 
+  "text_decoder": {
+  ...
+  "pipeline_num_layers":[1,10,10,7]
+  ...
+  }
+
+```
 - 运行微调命令
 ```bash
 mkdir save_dir
 bash examples/mindspore/qwen2.5vl/finetune_qwen2_5_vl_7b_lora.sh
 ```
 运行日志保存在msrun_log/worker_7.log中
+
+更多参数配置使用可参考[此处](https://gitcode.com/Ascend/MindSpeed-MM/tree/master/examples/mindspore/qwen2.5vl)。
